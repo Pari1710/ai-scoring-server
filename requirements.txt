@@ -1,0 +1,10 @@
+# In requirements.txt
+fastapi
+uvicorn[standard]
+pydantic
+confluent-kafka
+pymongo
+pandas
+numpy
+python-dotenv
+httpx

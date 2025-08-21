@@ -1,0 +1,51 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo-test
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+
+  zookeeper:
+    # Use a specific, stable version instead of 'latest'
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app-network
+
+  kafka:
+    # Use a specific, stable version instead of 'latest'
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
+
+  ai-scoring-service:
+    build: .
+    container_name: ai-scoring-service
+    depends_on:
+      - kafka
+      - mongo
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
